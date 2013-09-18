@@ -23,7 +23,7 @@ namespace Mutagenesis\Runner;
 
 class Base extends RunnerAbstract
 {
-    
+
     /**
      * Execute the runner
      *
@@ -33,7 +33,7 @@ class Base extends RunnerAbstract
     {
         $renderer = $this->getRenderer();
         echo $renderer->renderOpening();
-        
+
 
         /**
          * Run the test suite once to verify it is in a passing state before
@@ -66,8 +66,8 @@ class Base extends RunnerAbstract
             $this->getCacheDirectory() . '/mutagenesis.xml'
         );
         $orderedTestCases = $timeAnalysis->process();
-        
-        
+
+
 
         $countMutants = 0;
         $countMutantsKilled = 0;
@@ -85,7 +85,7 @@ class Base extends RunnerAbstract
          * collect data on how tests handled the mutations. We use ext/runkit
          * to dynamically alter included (in-memory) classes on the fly.
          */
-        
+
         foreach ($mutables as $i=>$mutable) {
             $mutations = $mutable->generate()->getMutations();
             foreach ($mutations as $mutation) {
@@ -98,23 +98,26 @@ class Base extends RunnerAbstract
                     $orderedTestCases
                 );
 
+                $job = new \Mutagenesis\Utility\Job;
                 $output = \Mutagenesis\Utility\Process::run(
-                    $job->generate($mutation, false, $orderedTestCases), $this->getTimeout()
+                    $job->generate($mutation, $orderedTestCases), $this->getTimeout()
                 );
                 /* TODO: Store output for per-mutant results */
-                $result = $this->getAdapter()->processOutput($output['stdout']);
-                
+                // $result = $this->getAdapter()->processOutput($output['stdout']);
+
 
                 $countMutants++;
-                if ($result[0] === 'timed out' || !$result[0]) {
+                if ($result[0] === \Mutagenesis\Adapter\AdapterAbstract::TIMED_OUT || !$result[0]) {
                     $countMutantsKilled++;
                     if ($this->getDetailCaptures()) {
                         $mutation['mutation']->mutate(
                             $mutation['tokens'],
                             $mutation['index']
                         );
-                        $mutantsCaptured[] = array($mutation, $result['stdout']);
+                        $mutantsCaptured[] = array($mutation, $result['stderr']);
                     }
+                } else if ($result[0] === \Mutagenesis\Adapter\AdapterAbstract::PROCESS_FAILURE) {
+                    // This need some changes since the mutant wasn't killed BUT also not exactly escaped
                 } else {
                     $countMutantsEscaped++;
                     $mutation['mutation']->mutate(
@@ -140,5 +143,5 @@ class Base extends RunnerAbstract
             $mutantsCaptured
         );
     }
-    
+
 }

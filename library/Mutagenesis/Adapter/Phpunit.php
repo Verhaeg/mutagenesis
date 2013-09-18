@@ -49,8 +49,10 @@ class Phpunit extends AdapterAbstract
     {
         $options = $runner->getOptions();
         $job = new \Mutagenesis\Utility\Job;
+        $outputKey = 'stdout';
         if(!$useStdout) {
             array_unshift($options['clioptions'], '--stderr');
+            $outputKey = 'stderr';
         }
         if (!in_array('--stop-on-failure', $options['clioptions'])) {
             array_unshift($options['clioptions'], '--stop-on-failure');
@@ -64,9 +66,9 @@ class Phpunit extends AdapterAbstract
             );
         }
         if (count($testCases) > 0) { // tests cases always 0 on first run
-            foreach ($testCases as $case) {
+            foreach ($testCases as $class => $case) {
                 $args = $options;
-                $args['clioptions'][] = $case['class'];
+                $args['clioptions'][] = $class;
                 $args['clioptions'][] = $case['file'];
                 $output = self::execute(
                     $job->generate(
@@ -76,8 +78,9 @@ class Phpunit extends AdapterAbstract
                         $runner->getBootstrap()
                     )
                 );
-                if (!$this->processOutput($output['stdout'])) {
-                    return array(false, $output);
+                $res = $this->processOutput($output[$outputKey]);
+                if (!$res) {
+                    return array($res, $output);
                 }
             }
         } else {
@@ -94,11 +97,12 @@ class Phpunit extends AdapterAbstract
                     $runner->getBootstrap()
                 )
             );
-            if (!$this->processOutput($output['stdout'])) {
-                return array(false, $output);
+            $res = $this->processOutput($output[$outputKey]);
+            if (!$res) {
+                return array($res, $output);
             }
         }
-        return array(true, $output);
+        return array($res, $output);
     }
 
     /**
@@ -129,7 +133,7 @@ class Phpunit extends AdapterAbstract
     public static function main($arguments, $mutation = null, $bootstrap = null)
     {
         $arguments = unserialize($arguments);
-        
+
         /**
          * Grab the Runkit extension utility and apply the mutation if needed
          */
@@ -160,6 +164,9 @@ class Phpunit extends AdapterAbstract
             chdir($arguments['tests']);
         }
         $command = new \PHPUnit_TextUI_Command;
+        if (!isset($arguments['clioptions'])) {
+            $arguments['clioptions'] = array();
+        }
         $command->run($arguments['clioptions'], false);
         chdir($originalWorkingDirectory);
     }
@@ -177,8 +184,15 @@ class Phpunit extends AdapterAbstract
         if (substr($output, 0, 21) == 'Your tests timed out.') { //TODO: Multiple instances
             return self::TIMED_OUT;
         }
+        if (substr($output, 0, 7) != "PHPUnit") {
+            return self::PROCESS_FAILURE;
+        }
+
         $lines = explode("\n", $output);
         $useful = array_slice($lines, 2);
+        if (!empty($useful) && (strpos($useful[0], "Configuration read from") === 0)) {
+            $useful = array_slice($useful, 2);
+        }
         foreach ($useful as $line) {
             if ($line == "\n") {
                 break;
@@ -188,6 +202,6 @@ class Phpunit extends AdapterAbstract
             }
         }
         return true;
-    } 
-    
+    }
+
 }

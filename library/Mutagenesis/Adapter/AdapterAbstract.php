@@ -26,13 +26,15 @@ abstract class AdapterAbstract
 
     const TIMED_OUT = 'timed out';
 
+    const PROCESS_FAILURE = 'process failure';
+
     /**
      * Output from the test library in use
      *
      * @var string
      */
     protected $_output = '';
-    
+
     /**
      * Runs the tests suite according to Runner set options and the execution
      * order of test case (if any). It then returns an array of two elements.
@@ -68,6 +70,6 @@ abstract class AdapterAbstract
     public function getOutput()
     {
         return $this->_output;
-    }  
-    
+    }
+
 }

@@ -64,7 +64,7 @@ class Mutagenesis_Adapter_PhpunitAdapterTest extends PHPUnit_Framework_TestCase
         $adapter = new \Mutagenesis\Adapter\Phpunit;
         $result = $adapter->runTests(
             $runner,
-            true, 
+            true,
             true
         );
         $this->assertStringStartsWith(
@@ -93,7 +93,7 @@ class Mutagenesis_Adapter_PhpunitAdapterTest extends PHPUnit_Framework_TestCase
         $adapter = new \Mutagenesis\Adapter\Phpunit;
         $result = $adapter->runTests(
             $runner,
-            true, 
+            true,
             true
         );
         $this->assertStringStartsWith(
@@ -120,7 +120,7 @@ class Mutagenesis_Adapter_PhpunitAdapterTest extends PHPUnit_Framework_TestCase
         $adapter = new \Mutagenesis\Adapter\Phpunit;
         $result = $adapter->runTests(
             $runner,
-            true, 
+            true,
             true
         );
         $this->assertTrue($adapter->processOutput($result[1]['stdout']));
@@ -144,7 +144,7 @@ class Mutagenesis_Adapter_PhpunitAdapterTest extends PHPUnit_Framework_TestCase
         $adapter = new \Mutagenesis\Adapter\Phpunit;
         $result = $adapter->runTests(
             $runner,
-            true, 
+            true,
             true
         );
         $this->assertFalse($adapter->processOutput($result[1]['stdout']));
@@ -168,7 +168,7 @@ class Mutagenesis_Adapter_PhpunitAdapterTest extends PHPUnit_Framework_TestCase
         $adapter = new \Mutagenesis\Adapter\Phpunit;
         $result = $adapter->runTests(
             $runner,
-            true, 
+            true,
             true
         );
         $this->assertFalse($adapter->processOutput($result[1]['stdout']));
@@ -192,12 +192,12 @@ class Mutagenesis_Adapter_PhpunitAdapterTest extends PHPUnit_Framework_TestCase
         $adapter = new \Mutagenesis\Adapter\Phpunit;
         $result = $adapter->runTests(
             $runner,
-            true, 
+            true,
             true
         );
         $this->assertFalse($adapter->processOutput($result[1]['stdout']));
     }
-    
+
     public function testAdapterOutputProcessingDetectsFailOverMultipleLinesWithNoDepOnFinalStatusReport()
     {
         $adapter = new \Mutagenesis\Adapter\Phpunit;
@@ -235,7 +235,7 @@ OUTPUT;
         $adapter = new \Mutagenesis\Adapter\Phpunit;
         $result = $adapter->runTests(
             $runner,
-            true, 
+            true,
             true,
             array(),
             array(
@@ -270,7 +270,7 @@ OUTPUT;
         $adapter = new \Mutagenesis\Adapter\Phpunit;
         $result = $adapter->runTests(
             $runner,
-            true, 
+            true,
             true,
             array(),
             array(
@@ -305,7 +305,7 @@ OUTPUT;
         $adapter = new \Mutagenesis\Adapter\Phpunit;
         $result = $adapter->runTests(
             $runner,
-            true, 
+            true,
             true,
             array(),
             array(
@@ -340,7 +340,7 @@ OUTPUT;
         $adapter = new \Mutagenesis\Adapter\Phpunit;
         $result = $adapter->runTests(
             $runner,
-            true, 
+            true,
             true,
             array(),
             array(
@@ -357,4 +357,34 @@ OUTPUT;
         $this->assertTrue($adapter->processOutput($result[1]['stdout']));
     }
 
+    public function testAdapterDetectsFailedRun()
+    {
+        $runner = m::mock('\Mutagenesis\Runner\Base');
+        $runner->shouldReceive('getOptions')->andReturn(
+            array(
+                'tests' => $this->root,
+                'clioptions' => array(),
+                'cache' => sys_get_temp_dir(),
+                'constraint' => ''
+            )
+        );
+        $runner->shouldReceive(array(
+            'getBootstrap' => null,
+            'getTimeout' => 1200
+        ));
+        $adapter = new \Mutagenesis\Adapter\Phpunit;
+        $result = $adapter->runTests(
+            $runner,
+            true,
+            true,
+            array(),
+            array(
+                array(
+                    'class' => 'PassTest',
+                    'file' => 'SyntaxError.php'
+                ),
+            )
+        );
+        $this->assertEquals(\Mutagenesis\Adapter\Phpunit::PROCESS_FAILURE, $adapter->processOutput($result[1]['stdout']));
+    }
 }

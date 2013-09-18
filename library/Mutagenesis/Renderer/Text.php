@@ -74,8 +74,10 @@ class Text implements RendererInterface
      */
     public function renderProgressMark($result)
     {
-        if ($result === 'timed out') {
+        if ($result === \Mutagenesis\Adapter\AdapterAbstract::TIMED_OUT) {
             return 'T';
+        } elseif ($result === \Mutagenesis\Adapter\AdapterAbstract::PROCESS_FAILURE) {
+            return 'F';
         } elseif ($result) {
             return 'E';
         } else {
@@ -148,7 +150,7 @@ class Text implements RendererInterface
         }
         return $out;
     }
-    
+
     /**
      * Utility function to prefix test output lines with an indent and equals sign
      *
