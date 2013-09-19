@@ -47,9 +47,12 @@ php.ini file to add the extension for loading, e.g.
 
     extension=runkit.so
 
-Huge thanks to [http://github.com/zenovich](http://github.com/zenovich "Dmitry Zenovich") (zenovich 
+Huge thanks to [http://github.com/zenovich](http://github.com/zenovich "Dmitry Zenovich") (zenovich
 on Github) for maintaining this runkit
 copy!
+
+Make sure that the extension PCNTL is enabled in your php.ini, mutagenesis requires that to be enabled to be able
+to call and run PHPUnit.
 
 
 Installation
@@ -69,7 +72,7 @@ Note: If installing from a git clone, you may need to delete any previous
 Mutagenesis install via PEAR using:
 
     sudo pear uninstall Mutagenesis
-    
+
 While the git repository tracks code in development, I will add an official
 PEAR channel in the near future once a stable release is made.
 
@@ -120,7 +123,7 @@ Command Line Options
 A typical mutagenesis command is issued with:
 
     mutagenesis --src="/path/project/library" --tests="/path/project/tests"
-    
+
 The basic parameters let you control the directory depth, i.e. which subset of
 the source code and/or tests will be utilised. Additional options may be passed
 to direct the unit test framework adapter:
@@ -145,17 +148,17 @@ PHPUnit test suites often use a TestHelper.php or Bootstrap.php file.
 For example, imagine we usually employ the following to run some PHPUnit tests:
 
     phpunit AllTests.php --exclude-group disabled
-    
+
 In addition, we use the file TestHelper.php to setup autloading for the tests
 (this would normally be included from within AllTests.php manually but Mutagenesis
 needs to load it as early as possible).
-    
+
 We can pass this to mutagenesis as:
 
     mutagenesis --src="/path/project/library" --tests="/path/project/tests" \
         --options="--exclude-group disabled" --constraint="AllTests.php" \
         --bootstrap="TestHelper.php"
-        
+
 Note: "\\" merely marks a line break for this README. The command should be on
 a single line with the \ removed.
 
@@ -180,14 +183,14 @@ changed. Here's a quick exerpt of a mutation test run with escaped mutants
     All initial checks successful! The mutagenic slime has been activated.
 
         > PHPUnit 3.4.12 by Sebastian Bergmann.
-        > 
+        >
         > ............................................................ 60 / 62
         > ..
-        > 
+        >
         > Time: 0 seconds, Memory: 16.50Mb
-        > 
+        >
         > OK (62 tests, 156 assertions)
-        > 
+        >
 
     Stand by...Mutation Testing commencing.
 
@@ -207,7 +210,7 @@ changed. Here's a quick exerpt of a mutation test run with escaped mutants
                  }
              }
              return true;
-             
+
 The progress output uses the following markers:
 
 * .: Current mutation was detected by test suite
@@ -251,6 +254,6 @@ any other test cases to leverage off their probable success.
 
 
 
-    
+
 
 
